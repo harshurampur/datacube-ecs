@@ -1,5 +1,5 @@
 variable "cluster" {
-  default = "datacube-wms"
+  default = "datacube-wms-cog"
 }
 
 variable "aws_region" {
@@ -7,7 +7,7 @@ variable "aws_region" {
 }
 
 variable "workspace" {
-  default = "dev"
+  default = "dev-cog"
 }
 
 variable "owner" {
@@ -45,7 +45,7 @@ variable "ssh_ip_address" {
 
 variable "key_name" {
   type = "string"
-  default = "ra-tf-dev"
+  default = "dea_devbox_hr"
 }
 
 variable "enable_jumpbox" {

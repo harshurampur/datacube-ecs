@@ -10,7 +10,7 @@ terraform {
     # have multiple enviornments alongside each other we set
     # this dynamically in the bitbucket-pipelines.yml with the
     # --backend
-    key = "ecs-test-stack-southeast-2/"
+    key = "s3-cogdata-test/"
 
     encrypt = true
 
@@ -32,7 +32,7 @@ terraform {
 # This means that running Terraform after a docker image
 # changes, the task will be updated.
 data "docker_registry_image" "latest" {
-  name = "geoscienceaustralia/datacube-wms:latest"
+  name = "u73516/datacube-wms:latest"
 }
 
 locals {
@@ -102,7 +102,7 @@ module "alb_test" {
   service_name      = "datacube-wms"
   vpc_id            = "${module.vpc.id}"
   public_subnet_ids = "${module.public.public_subnet_ids}"
-  alb_name          = "alb-test-1"
+  alb_name          = "alb-test"
   container_port    = "${var.container_port}"
   health_check_path = "/health"
 }
@@ -194,7 +194,7 @@ module "ec2_instances" {
   private_subnet_cidrs  = "${var.private_subnet_cidrs}"
   container_port        = "${var.container_port}"
   alb_security_group_id = "${list(module.alb_test.alb_security_group_id)}"
-
+  use_efs               = false
   # Force dependency wait
   depends_id = "${module.public.nat_complete}"
 
@@ -221,15 +221,3 @@ module "ecs_policy" {
   workspace = "${var.workspace}"
 }
 
-module "efs" {
-  source = "../terraform-ecs/modules/efs"
-
-  vpc_id                = "${module.vpc.id}"
-  availability_zones    = "${var.availability_zones}"
-  private_subnet_ids = "${module.ec2_instances.private_subnet_ids}"
-  ecs_instance_security_group_id = "${module.ec2_instances.ecs_instance_security_group_id}"
-  # Tags
-  owner     = "${var.owner}"
-  cluster   = "${var.cluster}"
-  workspace = "${var.workspace}"
-}
