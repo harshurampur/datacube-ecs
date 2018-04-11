@@ -10,7 +10,7 @@ terraform {
     # have multiple enviornments alongside each other we set
     # this dynamically in the bitbucket-pipelines.yml with the
     # --backend
-    key = "s2-indexing-test-stack-southeast-2/"
+    key = "sentinel2-nbar-indexing-cog/"
 
     encrypt = true
 
@@ -32,7 +32,7 @@ terraform {
 # This means that running Terraform after a docker image
 # changes, the task will be updated.
 data "docker_registry_image" "latest" {
-  name = "geoscienceaustralia/datacube-wms:crcsi"
+  name = "u73516/datacube-wms:latest"
 }
 
 module "docker_help" {
@@ -49,9 +49,9 @@ module "docker_help" {
 
 locals {
   # base url that corresponds to the Route53 zone
-  base_url = "opendatacubes.com"
+  base_url = "dea.gadevs.ga"
   # url that points to the service
-  public_url = "s2-wms.${local.base_url}"
+  public_url = "sentinel2-wms.${local.base_url}"
 }
 
 module "ecs_main" {
@@ -162,7 +162,7 @@ module "ec2_instances" {
 
   # EC2 Parameters
   instance_group    = "datacubewms"
-  instance_type     = "t2.medium"
+  instance_type     = "m5.xlarge"
   max_size          = "2"
   min_size          = "1"
   desired_capacity  = "2"
@@ -210,9 +210,9 @@ module "ec2_instances" {
 # }
 
 
-# module "cloudfront" {
+#module "cloudfront" {
 #   source = "../terraform-ecs/modules/cloudfront"
-
+#
 #   origin_domain = "${module.alb_test.alb_dns_name}"
 #   origin_id     = "default_lb_origin"
 #   aliases       = ["${local.public_url}"]
