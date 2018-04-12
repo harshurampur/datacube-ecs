@@ -32,7 +32,8 @@ terraform {
 # This means that running Terraform after a docker image
 # changes, the task will be updated.
 data "docker_registry_image" "latest" {
-  name = "u73516/datacube-wms:latest"
+  name = "u73516/datacube-wms:sentinel2"
+  name_geo = "u73516/datacube-wms:geomedian"
 }
 
 module "docker_help" {
@@ -41,6 +42,14 @@ module "docker_help" {
   image_name   = "${data.docker_registry_image.latest.name}"
   image_digest = "${data.docker_registry_image.latest.sha256_digest}"
 }
+
+module "docker_help2" {
+  source = "../terraform-ecs/modules/docker"
+
+  image_name   = "${data.docker_registry_image.latest.name_geo}"
+  image_digest = "${data.docker_registry_image.latest.sha256_digest}"
+}
+
 
 # ===============
 # public address
@@ -71,6 +80,40 @@ module "ecs_main" {
   db_username = "${var.db_admin_username}"
   database    = "datacube"
   
+  task_desired_count = "${var.task_desired_count}"
+  ec2_security_group = "${module.ec2_instances.ecs_instance_security_group_id}"
+
+  zone_url  = "${local.base_url}"
+  public_url = "${local.public_url}"
+  aws_region = "${var.aws_region}"
+
+
+  # Tags
+  owner     = "${var.owner}"
+  cluster   = "${var.cluster}"
+  workspace = "${var.workspace}"
+
+}
+
+
+
+module "ecs_geomedian" {
+  source = "modules/ecs"
+
+  name         = "datacube-wms"
+  docker_image = "${module.docker_help2.name_and_digest_ecs}"
+
+  memory         = "768"
+  container_port = "${var.container_port}"
+
+  vpc_id            = "${module.vpc.id}"
+  public_subnet_ids = "${module.public.public_subnet_ids}"
+
+  db_name     = "${var.db_dns_name}"
+  db_zone     = "${var.db_zone}"
+  db_username = "${var.db_admin_username}"
+  database    = "datacube"
+
   task_desired_count = "${var.task_desired_count}"
   ec2_security_group = "${module.ec2_instances.ecs_instance_security_group_id}"
 
