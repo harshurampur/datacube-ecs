@@ -31,23 +31,25 @@ terraform {
 # to update a task definition to an exact version
 # This means that running Terraform after a docker image
 # changes, the task will be updated.
-data "docker_registry_image" "latest" {
+data "docker_registry_image" "s2" {
   name = "u73516/datacube-wms:sentinel2"
-  name_geo = "u73516/datacube-wms:geomedian"
 }
 
+data "docker_registry_image" "geo" {
+  name = "u73516/datacube-wms:geomedian"
+}
 module "docker_help" {
   source = "../terraform-ecs/modules/docker"
 
-  image_name   = "${data.docker_registry_image.latest.name}"
-  image_digest = "${data.docker_registry_image.latest.sha256_digest}"
+  image_name   = "${data.docker_registry_image.s2.name}"
+  image_digest = "${data.docker_registry_image.s2.sha256_digest}"
 }
 
 module "docker_help2" {
   source = "../terraform-ecs/modules/docker"
 
-  image_name   = "${data.docker_registry_image.latest.name_geo}"
-  image_digest = "${data.docker_registry_image.latest.sha256_digest}"
+  image_name   = "${data.docker_registry_image.geo.name}"
+  image_digest = "${data.docker_registry_image.geo.sha256_digest}"
 }
 
 
@@ -61,12 +63,13 @@ locals {
   base_url = "dea.gadevs.ga"
   # url that points to the service
   public_url = "sentinel2-wms.${local.base_url}"
+  public_url_geo = "geomedian-wms.${local.base_url}"
 }
 
 module "ecs_main" {
   source = "modules/ecs"
 
-  name         = "datacube-wms"
+  name         = "s2-wms"
   docker_image = "${module.docker_help.name_and_digest_ecs}"
 
   memory         = "768"
@@ -100,7 +103,7 @@ module "ecs_main" {
 module "ecs_geomedian" {
   source = "modules/ecs"
 
-  name         = "datacube-wms"
+  name         = "geo-wms"
   docker_image = "${module.docker_help2.name_and_digest_ecs}"
 
   memory         = "768"
@@ -118,7 +121,7 @@ module "ecs_geomedian" {
   ec2_security_group = "${module.ec2_instances.ecs_instance_security_group_id}"
 
   zone_url  = "${local.base_url}"
-  public_url = "${local.public_url}"
+  public_url = "${local.public_url_geo}"
   aws_region = "${var.aws_region}"
 
 
