@@ -15,7 +15,7 @@ RUN conda install -n agdc scikit-image flask gunicorn \
 # https://stackoverflow.com/a/39278224
 ADD https://api.github.com/repos/harshurampur/datacube-wms/git/refs/heads/master version.json
 RUN cd $HOME \
-    && git clone -b master https://github.com/harshurampur/datacube-wms.git \
+    && git clone -b sentinel2-new https://github.com/harshurampur/datacube-wms.git \
     && cd $HOME/datacube-wms \
     && git checkout master \
     && source activate agdc \
