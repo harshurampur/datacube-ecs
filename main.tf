@@ -10,7 +10,7 @@ terraform {
     # have multiple enviornments alongside each other we set
     # this dynamically in the bitbucket-pipelines.yml with the
     # --backend
-    key = "sentinel2-nbar-indexing-cog/"
+    key = "s2-geo-indexing-cog/"
 
     encrypt = true
 
@@ -223,7 +223,7 @@ module "ec2_instances" {
   availability_zones    = "${var.availability_zones}"
   private_subnet_cidrs  = "${var.private_subnet_cidrs}"
   container_port        = "${var.container_port}"
-  alb_security_group_id = "${list(module.ecs_main.alb_security_group_id)}"
+  alb_security_group_id = "${list(module.ecs_main.alb_security_group_id, module.ecs_geomedian.alb_security_group_id)}"
   # If EFS is being used create the module and uncomment the efs_id
   use_efs               = false
   # efs_id                = "${module.efs.efs_id}"

@@ -43,7 +43,7 @@ module "ecs_service" {
   container_definitions = <<EOF
 [
   {
-  "name": "${var.name}",
+  "name": "datacube-wms",
   "image": "${var.docker_image}",
   "memory": ${var.memory},
   "essential": true,
